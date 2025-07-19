@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VaultofCodes - Certificate Verifier</title>
+   
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+
+/* Branding Header */
+.brand-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 0;
+  background-color: #ffffff;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+.brand-logo {
+  height: 48px;
+  width: auto;
+}
+
+.brand-title {
+  font-size: 26px;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Container Box */
+.container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.container h2 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+/* Input Field */
+input[type="text"] {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 16px;
+  margin-bottom: 20px;
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+/* Button */
+button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Card Style */
+.card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 30px;
+  margin: 30px auto;
+  max-width: 700px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  animation: fadeInUp 0.5s ease-in-out;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card h3, .card h4 {
+  margin-top: 0;
+  color: #222;
+  text-align: left;
+}
+
+.card p {
+  text-align: left;
+  color: #333;
+  margin: 8px 0;
+}
+
+/* Student Photo */
+.card img {
+  max-width: 130px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Assignment Status Badges */
+.assignment-status {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.assignment-status span {
+  background: #eaeaea;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* Links */
+.card a {
+  display: inline-block;
+  margin-top: 10px;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.card a:hover {
+  text-decoration: underline;
+}
+
+/* Chart */
+.chart-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+canvas {
+  max-width: 200px;
+}
+
+/* Spinner */
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #3498db;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.hidden {
+  display: none;
+}
+
+/* Toast */
+.toast {
+  visibility: hidden;
+  min-width: 220px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 14px;
+  position: fixed;
+  z-index: 999;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.5s, bottom 0.5s;
+}
+
+.toast.show {
+  visibility: visible;
+  opacity: 1;
+  bottom: 50px;
+}
+
+  </style>
+</head>
+<body>
+  <!-- Branding -->
+  <header class="brand-header">
+    <img src="https://play-lh.googleusercontent.com/hi5Pbcqr7as2PcchuEoptT3j6qvUrSdoKGMI9Pu8kFt1eLMvughbFWswDB0LSeSYEg" alt="VaultofCodes Logo" class="brand-logo" />
+    <h1 class="brand-title">VaultofCodes</h1>
+  </header>
+
+  <main>
+    <div class="container">
+      <h2>Verify Certificate</h2>
+      <input id="identifier" type="text" placeholder="Enter Email or ID" />
+      <button onclick="verifyStudent()">Verify</button>
+    </div>
+
+    <div id="result"></div>
+    <div class="spinner hidden"></div>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const students = [
+  {
+    id: "john@example.com",
+    name: "John Doe",
+    email: "john@example.com",
+    mobile: "9876543210",
+    domain: "Web Development",
+    college: "Dummy University",
+    start: "01 June 2024",
+    duration: "1 Month",
+    photo: "https://via.placeholder.com/130",
+    assignments: [true, false, true, true],
+    certificate: "#"
+  },
+  {
+    id: "khushi@123",
+    name: "khushi rani",
+    email: "khushirani123k@.com",
+    mobile: "9304414718",
+    domain: "webdevolpment",
+    college: "university of engineering and management",
+    start: "22 May 2022",
+    duration: "4 years",
+    photo: "https://th.bing.com/th/id/OIP.MVJcYEbxpX4e2MAmqWtXAwHaHa?w=180&h=180&c=7&r=0&o=7&dpr=1.4&pid=1.7&rm=3",
+    assignments: [true, false, true, false],
+    certificate: "#"
+  },
+  {
+    id: "sachin1234",
+    name: "sachin kumar",
+    email: "sachinkumarssm1011@gmail.com",
+    mobile: "7667657896",
+    domain: "web-dev",
+    college: "university of engineering and management",
+    start: "19 aug 2024",
+    duration: "4 years",
+    photo: "https://th.bing.com/th/id/OIP.bDQ4tA1I9HhiJc3Xk4mkCAHaJm?w=137&h=180&c=7&r=0&o=7&dpr=1.4&pid=1.7&rm=3",
+    assignments: [true, false, true, false],
+    certificate: "#"
+  }
+];
+
+function verifyStudent() {
+  const idInput = document.getElementById('identifier');
+  const id = idInput.value.trim().toLowerCase();
+  const resultBox = document.getElementById('result');
+
+  resultBox.innerHTML = '';
+  removeChart();
+
+  if (!id) return showToast("⚠️ Please enter a valid Email or ID");
+
+  showSpinner(true);
+
+  setTimeout(() => {
+    const student = students.find(s => s.id.toLowerCase() === id || s.email.toLowerCase() === id);
+
+    if (!student) {
+      showSpinner(false);
+      return showToast("❌ Student not found.");
+    }
+
+    const completed = student.assignments.filter(a => a).length;
+    const pending = student.assignments.length - completed;
+    const isComplete = completed === student.assignments.length;
+
+    const html = `
+      <div class="card">
+        <img src="${student.photo}" alt="Photo" />
+        <h3>${student.name}</h3>
+        <p>Email: ${student.email}</p>
+        <p>Mobile: ${student.mobile}</p>
+        <p>Domain: ${student.domain}</p>
+        <p>College: ${student.college}</p>
+        <p>Start Date: ${student.start}</p>
+        <p>Duration: ${student.duration}</p>
+        <h4>Assignment Status</h4>
+        <div class="assignment-status">
+          ${student.assignments.map((a, i) => `<span>A${i+1}: ${a ? '✅' : '❌'}</span>`).join('')}
+        </div>
+        <p>Status: <strong style="color:${isComplete ? 'green' : 'orange'}">${isComplete ? 'Completed' : 'In Progress'}</strong></p>
+        <a href="${student.certificate}" target="_blank">View Certificate</a>
+        <div class="chart-container">
+          <canvas id="progressChart" width="200" height="200"></canvas>
+        </div>
+      </div>
+    `;
+
+    resultBox.innerHTML = html;
+    showChart(completed, pending);
+    showToast("✅ Student data loaded.");
+    showSpinner(false);
+  }, 1000);
+}
+
+function showChart(completed, pending) {
+  const ctx = document.getElementById('progressChart');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Completed', 'Pending'],
+      datasets: [{
+        data: [completed, pending],
+        backgroundColor: ['#28a745', '#ffc107'],
+        borderWidth: 1
+      }]
+    },
+    options: {
+      plugins: {
+        legend: {
+          display: true,
+          position: 'bottom'
+        }
+      }
+    }
+  });
+}
+
+function removeChart() {
+  const oldCanvas = document.getElementById('progressChart');
+  if (oldCanvas) oldCanvas.remove();
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.innerText = msg;
+  toast.className = 'toast show';
+  setTimeout(() => toast.className = 'toast', 3000);
+}
+
+function showSpinner(show) {
+  document.querySelector('.spinner').classList.toggle('hidden', !show);
+}
+
+  </script>
+
+  <p>For proper use visite the given belo link!</p>
+  <button><a href="https://sachinkumarssk.github.io/ass3defr/">click me!</a></button>
+</body>
+</html>
